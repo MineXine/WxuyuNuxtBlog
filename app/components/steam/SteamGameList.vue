@@ -65,7 +65,7 @@ const handlePageChange = (page: number) => {
     <div class="SteamGameList">
       <a class="GameListCard" v-show="game.name !== 'Maiden And Lord'" v-for="game in gamesData?.allGames" :href="`https://steamcommunity.com/app/${game.appid}`" target="_blank">
         <div class="ListCardHeader">
-          <NuxtImg class="CardHeaderImage" :src="game.images.headerImage" />
+          <NuxtImg v-if="game.images?.headerImage" class="CardHeaderImage" :src="game.images.headerImage" />
         </div>
         <div class="ListCardBody">
           <div class="CardBodyInfo">

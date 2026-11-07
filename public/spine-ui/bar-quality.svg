@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 92" width="1200" height="92" preserveAspectRatio="none" role="img" aria-label="品质条木托">
+  <defs>
+    <linearGradient id="barBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6B4022"/>
+      <stop offset="0.14" stop-color="#552F19"/>
+      <stop offset="0.62" stop-color="#3E2112"/>
+      <stop offset="1" stop-color="#2A160C"/>
+    </linearGradient>
+    <linearGradient id="barEdge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#D9A85C" stop-opacity="0"/>
+      <stop offset="0.12" stop-color="#F0D197"/>
+      <stop offset="0.5" stop-color="#A9713A"/>
+      <stop offset="0.88" stop-color="#F0D197"/>
+      <stop offset="1" stop-color="#D9A85C" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FCE7BC"/>
+      <stop offset="0.5" stop-color="#D9A85C"/>
+      <stop offset="1" stop-color="#8A5A28"/>
+    </linearGradient>
+    <pattern id="grainBar" width="26" height="92" patternUnits="userSpaceOnUse">
+      <rect width="1" height="92" fill="#000" opacity="0.16"/>
+      <rect x="12" width="1" height="92" fill="#FFE0B0" opacity="0.05"/>
+    </pattern>
+  </defs>
+
+  <!-- 主体木条 -->
+  <rect x="18" y="10" width="1164" height="72" rx="6" fill="url(#barBody)"/>
+  <rect x="18" y="10" width="1164" height="72" rx="6" fill="url(#grainBar)" opacity="0.9"/>
+
+  <!-- 上沿高光 + 双金线 -->
+  <rect x="26" y="14" width="1148" height="2" fill="#FFDCA4" opacity="0.22"/>
+  <rect x="18" y="10" width="1164" height="2.5" fill="url(#barEdge)"/>
+  <rect x="18" y="79.5" width="1164" height="2.5" fill="url(#barEdge)"/>
+  <rect x="26" y="76" width="1148" height="1" fill="#000" opacity="0.45"/>
+
+  <!-- 两端卷云头 -->
+  <g fill="none" stroke="url(#gold)" stroke-width="2.4" stroke-linecap="round" opacity="0.95">
+    <path d="M18 46c-8 0-14-6-14-14s6-14 14-14"/>
+    <path d="M18 46c-8 0-14 6-14 14s6 14 14 14"/>
+    <circle cx="12" cy="46" r="3.2" fill="#D9A85C" stroke="none"/>
+    <path d="M1182 46c8 0 14-6 14-14s-6-14-14-14"/>
+    <path d="M1182 46c8 0 14 6 14 14s-6 14-14 14"/>
+    <circle cx="1188" cy="46" r="3.2" fill="#D9A85C" stroke="none"/>
+  </g>
+
+  <!-- 中部菱形饰 -->
+  <g opacity="0.18" fill="#FFE0B0">
+    <path d="M600 35l7 11-7 11-7-11z"/>
+    <path d="M566 39l5 7-5 7-5-7z"/>
+    <path d="M634 39l5 7-5 7-5-7z"/>
+  </g>
+</svg>

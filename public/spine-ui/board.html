@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>模型图鉴 · UI KIT v1</title>
+<style>
+  :root { --gold: #E9C584; --gold-hi: #F6E3BC; --dim: #C9AC82; --line: rgb(233 197 132 / 35%); }
+  * { box-sizing: border-box; }
+  body {
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 44px 48px 56px;
+    background: radial-gradient(120% 60% at 50% 0%, #3A1E12 0%, #1B0E08 55%, #0D0604 100%);
+    color: var(--gold-hi);
+    font-family: "LXGW WenKai Screen", "Noto Sans SC", system-ui, sans-serif;
+  }
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  h1 { margin: 0 0 6px; font-size: 34px; letter-spacing: 6px; color: #F6E3BC; }
+  .sub { margin: 0; font-size: 13px; color: var(--dim); letter-spacing: 1px; }
+  .meta { font-family: ui-monospace, monospace; font-size: 12px; color: #9C7A54; text-align: right; line-height: 1.8; }
+  h2 { margin: 30px 0 14px; font-size: 17px; letter-spacing: 3px; color: var(--gold); font-weight: 700; }
+  h2 span { margin-left: 10px; font-size: 12px; font-weight: 400; letter-spacing: 1px; color: var(--dim); }
+  .grid2 { display: grid; grid-template-columns: 1.06fr 1fr; gap: 8px 44px; align-items: start; }
+  .grid2 > section { min-width: 0; }
+  .full { grid-column: 1 / -1; }
+  .swatches { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; }
+  .sw { border-radius: 8px; overflow: hidden; background: #22110A; }
+  .sw i { display: block; height: 56px; }
+  .sw code { display: block; padding: 6px 8px 8px; font-family: ui-monospace, monospace; font-size: 10px; color: #9C7A54; }
+  .row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 26px 30px; }
+  .cell { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+  .cell b { font-size: 12px; font-weight: 500; color: var(--dim); letter-spacing: 1px; }
+  .medal { position: relative; width: 80px; height: 80px; }
+  .medal img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .medal i { position: absolute; inset: 10px; border-radius: 50%; box-shadow: inset 0 0 10px rgb(0 0 0 / 30%); }
+  .medal em { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 22px; color: #3A2410; text-shadow: 0 1px 0 rgb(255 255 255 / 45%); }
+  .medal.small em { font-size: 15px; }
+  .medal.dim { opacity: 0.62; filter: saturate(0.8); }
+  .card-demo { position: relative; width: 210px; padding-bottom: 52px; }
+  .card-demo .art { height: 240px; border-radius: 4px; background: linear-gradient(160deg, #3A2013, #1B0D06); display: grid; place-items: center; color: #9C7A54; font-size: 13px; }
+  .card-demo .frame { position: absolute; left: -4px; top: -4px; width: 218px; height: 322px; pointer-events: none; }
+  .card-demo .ribbon { position: absolute; top: -2px; right: 8px; width: 26px; }
+  .card-demo .plate { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; display: grid; place-items: center; }
+  .card-demo .plate img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card-demo .plate b { position: relative; font-size: 16px; letter-spacing: 3px; color: #F6E3BC; }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+  .stack img { display: block; max-width: 100%; }
+  .hint { font-size: 11.5px; color: #9C7A54; font-family: ui-monospace, monospace; }
+  .bgwrap { position: relative; width: 100%; height: 300px; border: 1px solid rgb(138 90 40 / 70%); border-radius: 6px; overflow: hidden; }
+  .bgwrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .compose { position: relative; width: 240px; height: 330px; border-radius: 8px; overflow: hidden; background: #1B0E08; }
+  .compose > img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .compose .art { position: absolute; left: 18px; right: 18px; top: 18px; height: 226px; background: #241309; display: grid; place-items: center; color: #9C7A54; font-size: 12px; border-radius: 3px; }
+  .compose .frame2 { position: absolute; left: 13px; top: 13px; width: calc(100% - 26px); height: calc(100% - 26px); }
+  .compose .ribbon2 { position: absolute; top: 14px; right: 24px; width: 28px; }
+  .compose .plate2 { position: absolute; left: 26px; right: 26px; bottom: 28px; height: 42px; display: grid; place-items: center; }
+  .compose .plate2 img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .compose .plate2 b { position: relative; font-size: 15px; letter-spacing: 3px; color: #F6E3BC; }
+  .notes { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 8px 44px; }
+  .notes p { margin: 0; font-size: 13px; line-height: 1.9; color: var(--dim); }
+  .notes code { font-family: ui-monospace, monospace; font-size: 11.5px; color: #C9A06A; }
+  footer { margin-top: 26px; font-family: ui-monospace, monospace; font-size: 11px; color: #7A5A3A; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>模型图鉴 · UI KIT v1</h1>
+    <p class="sub">依据《少年三国志2》品质图鉴重绘 · 深木 + 描金 + 朱砂／青玉点缀 · 全部为可缩放 SVG</p>
+  </div>
+  <div class="meta">
+    /spine 页面皮肤<br>
+    10 个切片资源 · 无位图
+  </div>
+</header>
+
+<div class="grid2">
+  <section class="full">
+    <h2>01 色板 <span>深木底 + 双金线 + 两处点亮色</span></h2>
+    <div class="swatches">
+      <div class="sw"><i style="background:#2E1710"></i><code>#2E1710</code></div>
+      <div class="sw"><i style="background:#4A2717"></i><code>#4A2717</code></div>
+      <div class="sw"><i style="background:#6B4022"></i><code>#6B4022</code></div>
+      <div class="sw"><i style="background:#F0D197"></i><code>#F0D197</code></div>
+      <div class="sw"><i style="background:#D9A85C"></i><code>#D9A85C</code></div>
+      <div class="sw"><i style="background:#8A5A28"></i><code>#8A5A28</code></div>
+      <div class="sw"><i style="background:#5C8F57"></i><code>#5C8F57</code></div>
+      <div class="sw"><i style="background:#B23A2C"></i><code>#B23A2C</code></div>
+      <div class="sw"><i style="background:#F6E3BC"></i><code>#F6E3BC</code></div>
+      <div class="sw"><i style="background:#120905"></i><code>#120905</code></div>
+    </div>
+  </section>
+
+  <section class="full">
+    <h2>02 品质圆钮 <span>金环固定，品质色只进内盘；双字自动缩号</span></h2>
+    <div class="row">
+      <div class="cell"><div class="medal"><i style="background:#E9C584"></i><img src="medal-ring.svg" alt=""><em>全</em></div><b>全部 · 选中</b></div>
+      <div class="cell"><div class="medal"><i style="background:#F0D197"></i><img src="medal-ring.svg" alt=""><em>金</em></div><b>金</b></div>
+      <div class="cell"><div class="medal small"><i style="background:#EBC79A"></i><img src="medal-ring.svg" alt=""><em>橙金</em></div><b>橙金</b></div>
+      <div class="cell"><div class="medal"><i style="background:#DCC6EE"></i><img src="medal-ring.svg" alt=""><em style="color:#4B2A6B">紫</em></div><b>紫</b></div>
+      <div class="cell"><div class="medal"><i style="background:#C7DAF2"></i><img src="medal-ring.svg" alt=""><em style="color:#26466B">蓝</em></div><b>蓝</b></div>
+      <div class="cell"><div class="medal dim"><i style="background:#CFE6D2"></i><img src="medal-ring.svg" alt=""><em style="color:#2F5330">绿</em></div><b>空品质 · 62%</b></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>03 绶带 / 铭牌 <span>从卡框上沿垂下</span></h2>
+    <div class="row">
+      <div class="cell"><img src="ribbon-owned.svg" width="70" height="194" alt=""><b>已拥有</b></div>
+      <div class="cell"><img src="ribbon-locked.svg" width="70" height="194" alt=""><b>未拥有</b></div>
+    </div>
+    <div style="margin-top:20px">
+      <div style="position:relative;height:60px;width:300px">
+        <img src="plate-name.svg" style="position:absolute;inset:0;width:100%;height:100%" alt="">
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1px">
+          <b style="font-size:17px;letter-spacing:3px;color:#F6E3BC">镇全曹仁</b>
+          <span style="font-family:ui-monospace,monospace;font-size:10.5px;color:#C9AC82;opacity:.8">9100140-a</span>
+        </div>
+      </div>
+      <p class="hint" style="margin:8px 0 0">铭牌：金线 + 角钉 + 中心菱形</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>04 卡框 <span>回纹四角、顶部挂坠</span></h2>
+    <div class="row">
+      <div class="card-demo">
+        <div class="art">立绘 / 模型缩略</div>
+        <img class="frame" src="frame-card.svg" alt="">
+        <img class="ribbon" src="ribbon-owned.svg" alt="">
+        <div class="plate">
+          <img src="plate-name.svg" alt="">
+          <b>坐姿少女</b>
+        </div>
+      </div>
+      <div class="cell">
+        <img src="frame-card.svg" width="176" height="240" alt="" style="background:#2A160C">
+        <b>240×320 · 100% 100% 拉伸</b>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>05 条 / 牌匾 / 分隔 <span>横向构件统一金线收边</span></h2>
+    <div class="stack">
+      <img src="bar-quality.svg" width="100%" height="46" alt="" style="max-width:520px">
+      <span class="hint">bar-quality.svg · 1200×92 品质条木托</span>
+      <div style="position:relative;width:280px;height:64px;margin-top:6px">
+        <img src="plaque.svg" style="position:absolute;inset:0;width:100%;height:100%" alt="">
+        <span style="position:absolute;inset:0;display:grid;place-items:center;font-size:19px;font-weight:800;letter-spacing:5px;color:#E9C584">模型图鉴</span>
+      </div>
+      <span class="hint">plaque.svg · 标题牌匾</span>
+      <img src="divider.svg" width="100%" height="12" alt="" style="max-width:520px;margin-top:6px">
+      <span class="hint">divider.svg · 分隔饰线</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>06 背景板 <span>暖木墙、灯窗、拼缝、颗粒</span></h2>
+    <div class="bgwrap"><img src="bg-hall.svg" alt=""></div>
+    <p class="hint" style="margin:8px 0 0">bg-hall.svg · 1600×1000</p>
+    <div class="row" style="margin-top:18px">
+      <div class="cell">
+        <div class="compose">
+          <img class="bg" src="bg-hall.svg" alt="">
+          <div class="art">立绘 / 模型缩略</div>
+          <img class="frame2" src="frame-card.svg" alt="">
+          <img class="ribbon2" src="ribbon-owned.svg" alt="">
+          <div class="plate2">
+            <img src="plate-name.svg" alt="">
+            <b>坐姿少女</b>
+          </div>
+        </div>
+        <b>组合示例</b>
+      </div>
+      <div class="cell">
+        <img src="corner-ornament.svg" width="110" height="110" alt="">
+        <b>corner-ornament.svg</b>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="notes">
+  <p>· 全部为 SVG，任意缩放不糊；引用路径 <code>/spine-ui/*.svg</code>，随 public 一起发布。</p>
+  <p>· 卡框、铭牌、木托用 <code>background-size: 100% 100%</code>；角花、绶带等比缩放。</p>
+  <p>· 品质色只作用于内盘，金环不换色；空品质 62% 不透明 + 降饱和。</p>
+  <p>· 层级：牌匾标题（衬线 800）＞ 铭牌名（衬线 700）＞ 模型 ID（等宽 11px）。</p>
+  <p>· 暗色固定，不随站点明暗主题反转；朱砂红点仅用于「有新内容」。</p>
+  <p>· 交互：卡牌 hover 上浮 4px + 金色外发光；品质钮选中为实心金盘。</p>
+</div>
+
+<footer>files · bg-hall.svg / bar-quality.svg / frame-card.svg / medal-ring.svg / plate-name.svg / ribbon-owned.svg / ribbon-locked.svg / plaque.svg / divider.svg / corner-ornament.svg</footer>
+</body>
+</html>

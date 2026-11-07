@@ -59,7 +59,7 @@ useEventListener(carouselEl, 'wheel', (e) => {
       <div class="SteamGameList">
         <a class="GameListCard" v-show="game.name !== '少女与城主'" v-for="game in gamesData?.recentGames" :href="`https://steamcommunity.com/app/${game.appid}`" target="_blank">
           <div class="ListCardHeader">
-            <NuxtImg class="CardHeaderImage" :src="game.images.headerImage" />
+            <NuxtImg v-if="game.images?.headerImage" class="CardHeaderImage" :src="game.images.headerImage" />
           </div>
           <div class="ListCardBody">
             <div class="CardBodyInfo">

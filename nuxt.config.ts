@@ -76,6 +76,8 @@ export default defineNuxtConfig({
 			// 修复部分平台会在文章路径后添加 `/`，导致闪现 404 错误
 			// https://github.com/nuxt/content/issues/2378
 			autoSubfolderIndex: CLOUDFLARE_PAGES || GITHUB_ACTIONS || NETLIFY ? false : undefined,
+			/** 历史文章里指向原始 markdown 的 /raw/*.md 链接不是页面，跳过预渲染（前缀匹配） */
+			ignore: ['/raw/'],
 		},
 	},
 
@@ -86,6 +88,15 @@ export default defineNuxtConfig({
 		'/api/stats': { prerender: true, headers: { 'Content-Type': 'application/json' } },
 		'/atom.xml': { prerender: true, headers: { 'Content-Type': 'application/xml' } },
 		'/favicon.ico': { redirect: { to: blogConfig.favicon } },
+		// 模型资源与运行时：内容不可变，给足长期缓存（二进制骨架 + 贴图动辄 1~2MB）
+		'/models/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+		'/vendor/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+		// 模型库：列表与每篇模型文章都走静态生成（SSG）
+		'/spine': { prerender: true },
+		'/spine/**': { prerender: true },
+		// 文档：列表与文档详情同样静态生成
+		'/wiki': { prerender: true },
+		'/wiki/**': { prerender: true },
 		'/zhilu.opml': { prerender: true, headers: { 'Content-Type': 'application/xml' } },
 	},
 
@@ -101,6 +112,8 @@ export default defineNuxtConfig({
 				memos: env.MEMOS_URL || 'https://s.dusays.com',
 				username: env.MEMOS_USERNAME || 'MineXine',
 				limit: Number(env.MEMOS_LIMIT || 10),
+				// 写操作令牌（评论 / 喜欢 / 非喜欢 / 收藏）；未配置时前端自动降级为只读
+				token: env.MEMOS_TOKEN || '',
 			},
 			nodeVersion,
 			platform,

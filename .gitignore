@@ -40,3 +40,9 @@ chain-*
 edge_*.txt
 ibl_*.*
 memos_*.*
+# 本地开发临时文件
+*.local
+temp/
+tmp/
+shots/
+data/

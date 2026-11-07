@@ -151,6 +151,14 @@ export default defineAppConfig({
     Api: 'https://hot-api.liiiu.cn',
     /** 卡片布局：'grid' 竖向卡片 / 'row' 横向单列 */
     layout: 'row' as 'grid' | 'row',
+    /**
+     * 「首条单栏大卡 + 其余两栏卡片」布局总开关
+     *
+     * - true 时忽略上面的 layout，强制使用 featured 布局
+     * - 组件 props.featured 传布尔值可单独覆盖此全局开关
+     * - 页面级设置（pages/hot.vue 的 pageFeaturedLayout）优先于此处
+     */
+    featuredLayout: true,
     timeout: 200,
     RefreshInterval: 5 * 60 * 1000,
   },
@@ -310,7 +318,9 @@ export default defineAppConfig({
             { icon: 'ph:star-of-david-bold', text:'优良精装', url:'/equipment'},
             { icon: 'ph:steam-logo-bold', text: '游戏时刻', url: '/steam'},
             { icon: 'ph:lightning-bold', text:'闲言碎语', url:'/memos' },
-            { icon: 'bxs:hot', text:'热搜', url:'/hot'}
+            { icon: 'bxs:hot', text:'热搜', url:'/hot'},
+            // { icon: 'ph:cube-bold', text:'模型预览', url:'/spine'},
+            // { icon: 'ph:books-bold', text:'文档', url:'/wiki'}
 					],
         },
         // { icon: 'ph:chats-bold', text:'​纸笺寄语', url:'/comments' },
@@ -351,13 +361,29 @@ export default defineAppConfig({
 	 * @see app/components/memos/MemosTimeline.vue
 	 */
 	memos: {
-		/** Memos 实例地址（不含末尾斜杠） */
-		memos: 'https://s.dusays.com',
+		/**
+		 * Memos 实例地址（不含末尾斜杠）
+		 * 留空则使用 runtimeConfig（环境变量 MEMOS_URL），再默认回退到公共实例
+		 */
+		memos: '',
 		/** Memos 用户名（走 CEL filter: creator == "users/{username}"） */
-		username: 'MineXine',
+		username: '',
 		/** 每页条数 */
 		limit: 10,
 		/** 布局模式：'list' 单列 | 'masonry' 瀑布流 */
 		layout: 'list' as 'list' | 'masonry',
+		/**
+		 * 访问令牌（评论 / 喜欢 / 非喜欢 / 收藏需要）
+		 * 留空则使用 runtimeConfig（环境变量 MEMOS_TOKEN）；两者都为空时前台只读
+		 */
+		token: '',
+		/** 页面横幅封面图 */
+		cover: '/image/PageCover/moment.avif',
+		/** 列表头像（留空则用站点作者头像；建议填 48px 小图，避免加载原图） */
+		avatar: '/image/SiteCover/avatar_48.avif',
+		/** 横幅主标题，留空则取站点作者名 */
+		heroTitle: '',
+		/** 横幅副标题，留空则取站点签名 */
+		heroDesc: '',
 	},
 })

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 78" width="340" height="78" preserveAspectRatio="none" role="img" aria-label="标题牌匾">
+  <defs>
+    <linearGradient id="plq" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5E3A1E"/>
+      <stop offset="0.5" stop-color="#3D2212"/>
+      <stop offset="1" stop-color="#26140B"/>
+    </linearGradient>
+    <linearGradient id="plqG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#A9713A"/>
+      <stop offset="0.2" stop-color="#F3D69A"/>
+      <stop offset="0.5" stop-color="#B37F3E"/>
+      <stop offset="0.8" stop-color="#F3D69A"/>
+      <stop offset="1" stop-color="#A9713A"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M14 4h312a8 8 0 0 1 8 8v54a8 8 0 0 1-8 8H14a8 8 0 0 1-8-8V12a8 8 0 0 1 8-8z" fill="url(#plq)"/>
+  <path d="M14 4h312a8 8 0 0 1 8 8v54a8 8 0 0 1-8 8H14a8 8 0 0 1-8-8V12a8 8 0 0 1 8-8z" fill="none" stroke="url(#plqG)" stroke-width="2"/>
+  <path d="M18 12h304" stroke="#FFDCA4" stroke-opacity="0.18" stroke-width="1"/>
+  <path d="M16 20v44" stroke="#E9C584" stroke-opacity="0.22" stroke-width="1"/>
+  <path d="M324 20v44" stroke="#E9C584" stroke-opacity="0.22" stroke-width="1"/>
+
+  <!-- 左右缺口钉 -->
+  <g fill="#D9A85C" opacity="0.9">
+    <path d="M6 39l5 6-5 6-3-6z"/>
+    <path d="M334 39l-5 6 5 6 3-6z"/>
+  </g>
+</svg>

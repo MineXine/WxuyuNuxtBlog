@@ -42,12 +42,29 @@ const blogConfig = {
       技术探索: { icon: 'ph:cpu-bold', color: '#fa3' },
       日常随笔: { icon: 'ph:pen-bold', color: '#af7' },
       自设记录: { icon: 'ph:book-open-text-bold', color:'#a78'},
+      // 文档 wiki 分类
+      模型图鉴: { icon: 'ph:cube-bold', color: '#E9C584' },
+      文档规范: { icon: 'ph:notebook-bold', color: '#79AEE8' },
+      // 模型图鉴分类（对应《少年三国志2》图鉴可选项）
+      武将: { icon: 'ph:user-bold', color: '#E9C584' },
+      神兵: { icon: 'ph:sword-bold', color: '#C79A57' },
+      神兽: { icon: 'ph:paw-print-bold', color: '#8FBF6A' },
+      红颜: { icon: 'ph:heart-straight-bold', color: '#E39BC0' },
+      军师: { icon: 'ph:chess-knight-bold', color: '#79AEE8' },
+      战法: { icon: 'ph:scroll-bold', color: '#B48BE0' },
+      合击: { icon: 'ph:lightning-bold', color: '#E0A05A' },
+      副将: { icon: 'ph:shield-bold', color: '#9BB2C4' },
+      坐骑: { icon: 'ph:horse-bold', color: '#DE7C6E' },
 		},
 		defaultCategoryIcon: 'ph:folder-bold',
 		/** 文章版式，首个为默认版式 */
 		types: {
-			tech: {},
-			story: {},
+			tech: { label: '技术' },
+			story: { label: '故事' },
+			/** 模型：正文用于展示 Spine 骨架模型（配合 ModelName / ModelAssets 字段） */
+			model: { label: '模型' },
+			/** 文档：wiki 界面里的条目（/wiki） */
+			wiki: { label: '文档' },
 		},
 		/** 分类排序方式，键为排序字段，值为显示名称 */
 		order: {

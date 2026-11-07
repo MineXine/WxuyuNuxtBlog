@@ -22,7 +22,7 @@ onMounted(async () => {
 <template>
   <div class="SteamUser">
     <div class="SteamUserHeader">
-      <NuxtImg class="UserHeaderAvatar" :src="`${userData?.avatar.large}`" />
+      <NuxtImg v-if="userData?.avatar?.large" class="UserHeaderAvatar" :src="`${userData.avatar.large}`" />
       <div class="UserHeaderInfo">
         <div class="HeaderInfoRow">
           <h2 class="RowUserName">

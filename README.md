@@ -191,6 +191,37 @@ pnpm check:feed # 检测某友链 / 任意 URL 的托管商及可访问性
 pnpm check:feed/all # 检测所有友链可访问性并生成报告
 ```
 
+## 自定义功能
+
+### Spine 模型预览
+
+- `/spine` 模型库列表、`/spine/local` 本地模型库，文章类型 `model` 自动内嵌可交互预览（`app/components/spine/SpineModelViewer.vue`）
+- 运行时与资源双重缓存：`Cache Storage` 持久化 + 内存 LRU；首次访问后贴图、骨架、图集自动落盘
+- 渲染尺寸以「CSS 盒」为唯一真相来源，DevTools 停靠 / 侧栏折叠 / 窗口缩放时模型比例恒定
+- 正文里可用 MDC 组件直接嵌入模型：```md
+::spine-model{name="9100140-a" compact}
+::```
+
+### 说说（Memos）系统
+
+- 组件：`app/components/memos/`，支持时间线视图、月份分隔、标签筛选、概览统计
+- 发布信息：记录 **IP 属地** 与 **设备信息**（网页端显示浏览器 + 版本号）
+- 互动：**评论 / 喜欢 / 非喜欢 / 收藏**，乐观更新 + 失败回滚；未配置令牌时自动降级为只读
+- 正文支持 Markdown 与 MDC 组件；图片走本地缓存（`app/utils/imageCache.ts`），命中后秒开且可离线查看
+- 实例地址与令牌支持环境变量切换：
+
+```sh
+MEMOS_URL=https://your-memos.example.com \
+MEMOS_TOKEN=your-access-token \
+MEMOS_USERNAME=your-name
+```
+
+也可以接入自建的 **说说系统**（Memos v1 兼容 API，自带 IP 属地 / 设备记录 / 互动 / 附件缓存）。
+
+### 文档站
+
+- `/wiki` 文档列表与详情，文档树导航（`app/components/wiki/`）
+
 ## 贡献
 
 欢迎参与项目：如果有具体问题或功能建议，可以发起 Issue；如果愿意在已确定的方向上增加功能或修复问题，可以提交 Pull Request。

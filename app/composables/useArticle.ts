@@ -14,6 +14,27 @@ export function useArticleIndexOptions(path = 'posts/%') {
 		.all()
 }
 
+/**
+ * 模型文章（type: model）列表查询
+ *
+ * 数据在构建期由 queryCollection 取好并随页面一起静态化（SSG），
+ * 因此模型浏览页无需在客户端再发请求。
+ */
+export function useModelIndexOptions() {
+	return queryCollection('content')
+		.where('type', '=', 'model')
+		.select('categories', 'date', 'description', 'image', 'path', 'tags', 'title', 'type', 'updated', 'ModelName', 'ModelQuality', 'ModelPortrait', 'ModelAssets')
+		.all()
+}
+
+/** 文档（wiki）列表查询，构建期取数后随页面静态化 */
+export function useWikiIndexOptions() {
+	return queryCollection('content')
+		.where('type', '=', 'wiki')
+		.select('categories', 'date', 'description', 'image', 'path', 'tags', 'title', 'type', 'updated')
+		.all()
+}
+
 interface UseCategoryOptions {
 	bindQuery?: string
 }
@@ -94,4 +115,18 @@ interface GetPostTypeClassNameOptions {
 export function getPostTypeClassName(type = 'tech', options?: GetPostTypeClassNameOptions) {
 	const { prefix = 'text' } = options || {}
 	return `${prefix}-${type}`
+}
+
+/** 文章类型显示名（blog.config 中 types 的 label，缺省回落到 key） */
+const ARTICLE_TYPE_LABELS: Record<string, string> = {
+	tech: '技术',
+	story: '故事',
+	model: '模型',
+}
+
+export function getArticleTypeLabel(type?: string) {
+	if (!type)
+		return ''
+	const configured = (useAppConfig().article.types as Record<string, { label?: string }>)?.[type]?.label
+	return configured || ARTICLE_TYPE_LABELS[type] || type
 }

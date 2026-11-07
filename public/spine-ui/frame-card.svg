@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 320" width="240" height="320" preserveAspectRatio="none" role="img" aria-label="卡牌金框">
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FCE9C0"/>
+      <stop offset="0.35" stop-color="#DFAE62"/>
+      <stop offset="0.62" stop-color="#A9713A"/>
+      <stop offset="1" stop-color="#F3D69A"/>
+    </linearGradient>
+    <linearGradient id="fgDim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#DFAE62" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#8A5A28" stop-opacity="0.5"/>
+    </linearGradient>
+    <clipPath id="clipFrame">
+      <rect x="2" y="2" width="236" height="316" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#clipFrame)">
+    <!-- 外描边 -->
+    <rect x="2.5" y="2.5" width="235" height="315" rx="5.5" fill="none" stroke="#1B0E07" stroke-width="5" opacity="0.85"/>
+    <rect x="2.5" y="2.5" width="235" height="315" rx="5.5" fill="none" stroke="url(#fg)" stroke-width="2.2"/>
+    <!-- 铜带 -->
+    <rect x="7" y="7" width="226" height="306" rx="3.5" fill="none" stroke="#6B4423" stroke-width="5" opacity="0.55"/>
+    <!-- 内金线 -->
+    <rect x="12" y="12" width="216" height="296" rx="2.5" fill="none" stroke="url(#fgDim)" stroke-width="1"/>
+    <rect x="14.5" y="14.5" width="211" height="291" rx="2" fill="none" stroke="#000" stroke-width="1" opacity="0.5"/>
+
+    <!-- 四角回纹角花 -->
+    <g fill="none" stroke="url(#fg)" stroke-width="2" stroke-linecap="round">
+      <g transform="translate(9 9)">
+        <path d="M0 20V6a6 6 0 0 1 6-6h20"/>
+        <path d="M6 26V12a6 6 0 0 1 6-6h20" opacity="0.45" stroke-width="1.2"/>
+        <path d="M20 6l4 4-4 4-4-4z" fill="#E9C584" stroke="none"/>
+      </g>
+      <g transform="translate(231 9) scale(-1 1)">
+        <path d="M0 20V6a6 6 0 0 1 6-6h20"/>
+        <path d="M6 26V12a6 6 0 0 1 6-6h20" opacity="0.45" stroke-width="1.2"/>
+        <path d="M20 6l4 4-4 4-4-4z" fill="#E9C584" stroke="none"/>
+      </g>
+      <g transform="translate(9 311) scale(1 -1)">
+        <path d="M0 20V6a6 6 0 0 1 6-6h20"/>
+        <path d="M6 26V12a6 6 0 0 1 6-6h20" opacity="0.45" stroke-width="1.2"/>
+        <path d="M20 6l4 4-4 4-4-4z" fill="#E9C584" stroke="none"/>
+      </g>
+      <g transform="translate(231 311) scale(-1 -1)">
+        <path d="M0 20V6a6 6 0 0 1 6-6h20"/>
+        <path d="M6 26V12a6 6 0 0 1 6-6h20" opacity="0.45" stroke-width="1.2"/>
+        <path d="M20 6l4 4-4 4-4-4z" fill="#E9C584" stroke="none"/>
+      </g>
+    </g>
+
+    <!-- 顶部挂坠 -->
+    <g stroke="url(#fg)" stroke-width="1.4" fill="none" opacity="0.9">
+      <path d="M120 3v12"/>
+      <path d="M120 15l6 7-6 7-6-7z" fill="#E9C584" stroke="none"/>
+    </g>
+
+    <!-- 底部中心小花 -->
+    <g stroke="url(#fgDim)" stroke-width="1.2" fill="none" opacity="0.75">
+      <path d="M104 311c4-5 10-5 16 0"/>
+      <path d="M136 311c-4-5-10-5-16 0"/>
+      <path d="M120 305l3 4-3 4-3-4z" fill="#E9C584" stroke="none"/>
+    </g>
+  </g>
+</svg>
