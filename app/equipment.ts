@@ -8,6 +8,7 @@ export type manufacturers = {
 export const equipment: item[] = [
   {
     name: "天选4",
+    brand: { name: "华硕天选" },
     image: "/image/PageImageAssets/equipment/TianXuan.avif",
     src: "https://www.myxz.top",
     categroy: '硬件',
@@ -25,6 +26,7 @@ export const equipment: item[] = [
     money: 2344,
   }, {
     name: "iPhone XR",
+    brand: { name: "Apple" },
     image: "https://s11.ax1x.com/2023/06/07/pCiB3vD.jpg",
     src: "https://www.myxz.top",
     categroy: '外设',
@@ -40,6 +42,7 @@ export const equipment: item[] = [
     money: 2344,
   }, {
     name: "iPhone XR",
+    brand: { name: "Apple" },
     image: "https://s11.ax1x.com/2023/06/07/pCiB3vD.jpg",
     src: "https://www.myxz.top",
     categroy: '硬件',
