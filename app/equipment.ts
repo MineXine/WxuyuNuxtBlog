@@ -8,7 +8,7 @@ export type manufacturers = {
 export const equipment: item[] = [
   {
     name: "天选4",
-    brand: { name: "华硕天选" },
+    brand: { name: "华硕天选", icon: "icon-ASUS" },
     image: "/image/PageImageAssets/equipment/TianXuan.avif",
     src: "https://www.myxz.top",
     categroy: '硬件',
@@ -24,6 +24,10 @@ export const equipment: item[] = [
     tag: ['轻薄本', 'AMD'],
     date: "2023-09-01",
     money: 2344,
+    brand_hardware: {
+      CPU: 'AMD',
+      GPU: 'NVIDIA'
+    }
   }, {
     name: "iPhone XR",
     brand: { name: "Apple" },
