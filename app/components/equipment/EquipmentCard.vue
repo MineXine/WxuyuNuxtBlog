@@ -310,21 +310,17 @@ function requestComment() {
 		.card-specs {
 			display: grid;
 			grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-			gap: 0.45rem 0.6rem;
+			gap: 0.55rem;
 			font-size: 0.8rem;
 
 			.spec-item {
 				display: flex;
 				flex-direction: column;
-				gap: 0.1rem;
-				padding: 0.3rem 0.5rem;
-				border: 1px solid var(--icat-secondbg);
-				border-radius: 0.5rem;
-				transition: background 0.24s ease;
-
-				&:hover {
-					background: color-mix(in srgb, var(--category-color-one, #3AF) 10%, transparent);
-				}
+				gap: 0;
+				padding: 0;
+				border: none;
+				border-radius: 0;
+				background: transparent;
 			}
 
 			.spec-label {
@@ -439,10 +435,10 @@ function requestComment() {
 	/* ── 设备购入日期显示位置 ── */
 	.equipment-purchase {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		grid-area: purchase;
 		align-items: flex-start;
-		gap: 0.15rem;
+		gap: 1.15rem;
 		min-width: 0;
 		font-size: 0.75rem;
 		color: var(--c-text-2);
