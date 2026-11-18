@@ -71,8 +71,8 @@ const dockSubTextRef = ref<HTMLElement | null>(null)
 /** 面板位置 */
 const panelPos = ref({ left: 0, top: 0, width: 0 })
 
-/** 歌词面板是否弹出（点播放模式旁边的歌词按钮） */
-const lyricsOpen = ref(false)
+/** 歌词面板是否展开（胶囊上的歌词按钮可收起 / 展开） */
+const lyricsOpen = ref(true)
 
 /** 是否启用（可在设置面板里临时关掉） */
 const enabled = computed(() => runtime.enabled.value)
@@ -366,18 +366,9 @@ function onVolume(event: Event): void {
 						<button
 							type="button"
 							class="mp-icon-btn"
-							:title="modeLabel"
-							:aria-label="modeLabel"
-							@click="toggleMode"
-						>
-							<Icon :name="modeIcon" />
-						</button>
-						<button
-							type="button"
-							class="mp-icon-btn"
 							:class="{ 'is-active': lyricsOpen }"
-							title="歌词"
-							aria-label="歌词"
+							:title="lyricsOpen ? '收起歌词' : '显示歌词'"
+							:aria-label="lyricsOpen ? '收起歌词' : '显示歌词'"
 							@click="toggleLyrics"
 						>
 							<Icon name="ph:quotes-bold" />
@@ -402,6 +393,15 @@ function onVolume(event: Event): void {
 				</div>
 
 				<div class="mp-controls">
+					<button
+						type="button"
+						class="mp-icon-btn"
+						:title="modeLabel"
+						:aria-label="modeLabel"
+						@click="toggleMode"
+					>
+						<Icon :name="modeIcon" />
+					</button>
 					<button type="button" class="mp-icon-btn" title="上一曲" aria-label="上一曲" @click="prevTrack">
 						<Icon name="ph:skip-back-fill" />
 					</button>
@@ -447,11 +447,12 @@ function onVolume(event: Event): void {
 			<section v-if="lyricsOpen" class="mp-card mp-lyrics-card">
 				<header class="mp-card-head">
 					<span class="mp-lyrics-title">
+						<Icon name="ph:quotes-bold" />
 						歌词
 					</span>
-					<button type="button" class="mp-icon-btn is-mini" title="收起歌词" aria-label="收起歌词" @click="lyricsOpen = false">
-						<Icon name="ph:x-bold" />
-					</button>
+					<span class="mp-lyrics-counter">
+						{{ lyricIndex + 1 }} / {{ lyrics.length }}
+					</span>
 				</header>
 				<MetingLyrics
 					ref="lyricsRef"
@@ -769,11 +770,13 @@ function onVolume(event: Event): void {
 	overflow-y: auto;
 	max-height: calc(100vh - 6rem);
 	padding: 0.6rem;
-	border: 1px solid color-mix(in srgb, var(--c-text) 12%, transparent);
+	border: 1px solid color-mix(in srgb, var(--c-text) 14%, transparent);
 	border-radius: 16px;
-	box-shadow: 0 18px 40px -12px rgb(0 0 0 / 28%);
-	background-color: color-mix(in srgb, var(--c-bg) 92%, transparent);
-	backdrop-filter: blur(18px) saturate(160%);
+	box-shadow: 0 18px 40px -12px rgb(0 0 0 / 32%);
+
+	/* 毛玻璃：面板透出背后内容 */
+	background-color: color-mix(in srgb, var(--c-bg) 46%, transparent);
+	backdrop-filter: blur(28px) saturate(180%);
 	color: var(--c-text);
 	z-index: 1002;
 
@@ -785,9 +788,13 @@ function onVolume(event: Event): void {
 .mp-card {
 	min-width: 0;
 	padding: 0.7rem;
-	border: 1px solid color-mix(in srgb, var(--c-text) 8%, transparent);
+	border: 1px solid color-mix(in srgb, var(--c-text) 12%, transparent);
 	border-radius: 12px;
-	background: var(--c-bg-1);
+	box-shadow: 0 6px 20px -10px rgb(0 0 0 / 22%);
+
+	/* 半透明毛玻璃卡片，透出面板背后的内容 */
+	background: color-mix(in srgb, var(--c-bg-1) 52%, transparent);
+	backdrop-filter: blur(20px) saturate(170%);
 }
 
 /* 播放器卡片 */
@@ -958,9 +965,18 @@ function onVolume(event: Event): void {
 }
 
 .mp-lyrics-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
 	font-size: 0.78rem;
 	font-weight: 600;
 	color: var(--c-text-2);
+}
+
+.mp-lyrics-counter {
+	font-size: 0.72rem;
+	color: var(--c-text-3);
+	font-variant-numeric: tabular-nums;
 }
 
 @media screen and (max-width: 640px) {

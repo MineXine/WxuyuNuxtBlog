@@ -74,6 +74,16 @@ function select(index: number): void {
 
 <template>
 <div class="mp-playlist">
+	<div class="mp-playlist-head">
+		<span class="mp-playlist-title">
+			<Icon name="ph:list-bullets-bold" />
+			播放列表
+		</span>
+		<span class="mp-playlist-count">
+			{{ songs.length }} 首
+		</span>
+	</div>
+
 	<div class="mp-playlist-search">
 		<Icon name="ph:magnifying-glass-bold" class="mp-search-icon" />
 		<input
