@@ -5,6 +5,8 @@
  * 支持逐词（YRC）高亮：有 etext 时把整行拆成一个个 span，
  * 每帧由父组件调用 `updateHighlight(time)` 直接改 `--progress`，
  * 不走响应式状态（每帧 setState 会把整块列表重渲染）。
+ *
+ * 整块区域可滚动浏览；点某一句会抛出 `seek`，由父组件跳到那句继续播。
  */
 import type { LrcLine } from '~/composables/useMetingLyrics'
 
@@ -13,6 +15,11 @@ const props = defineProps<{
 	lines: LrcLine[]
 	/** 当前行下标 */
 	currentIndex: number
+}>()
+
+const emit = defineEmits<{
+	/** 点击某句歌词：请求从该句开始播放（秒） */
+	seek: [time: number]
 }>()
 
 const boxRef = ref<HTMLElement | null>(null)
@@ -40,22 +47,25 @@ function updateHighlight(time: number): void {
 	}
 }
 
-/** 当前行居中 */
-function centerCurrent(): void {
+/**
+ * 当前行居中
+ *
+ * 只滚歌词容器自身，别用 scrollIntoView（会把整个面板一起滚）。
+ */
+function center(): void {
 	const box = boxRef.value
 	if (!box || props.currentIndex < 0)
 		return
 	const target = box.querySelector<HTMLElement>(`[data-line="${props.currentIndex}"]`)
 	if (!target)
 		return
-	// 只滚歌词容器自身，别用 scrollIntoView（会把面板一起滚）
 	const top = target.offsetTop - box.clientHeight / 2 + target.clientHeight / 2
 	box.scrollTo({ top, behavior: 'smooth' })
 }
 
-watch(() => props.currentIndex, () => nextTick(centerCurrent))
+watch(() => props.currentIndex, () => nextTick(center))
 
-defineExpose({ updateHighlight })
+defineExpose({ updateHighlight, center })
 </script>
 
 <template>
@@ -63,14 +73,17 @@ defineExpose({ updateHighlight })
 	<p v-if="!lines.length" class="mp-lyrics-empty">
 		暂无歌词
 	</p>
-	<div
+	<button
 		v-for="(line, index) in lines"
 		:key="index"
 		:data-line="index"
+		type="button"
 		class="mp-lyric-line"
 		:class="{ 'is-active': index === currentIndex }"
+		title="从这句开始播放"
+		@click="emit('seek', line.time)"
 	>
-		<div class="mp-lyric-main">
+		<span class="mp-lyric-main">
 			<template v-if="line.etext?.length">
 				<span class="mp-karaoke">
 					<span
@@ -84,22 +97,21 @@ defineExpose({ updateHighlight })
 					>{{ seg.text }}</span>
 				</span>
 			</template>
-			<template v-else>
-				{{ line.text }}
-			</template>
-		</div>
-		<div v-if="line.pairlyric" class="mp-lyric-sub">
+			<template v-else>{{ line.text }}</template>
+		</span>
+		<span v-if="line.pairlyric" class="mp-lyric-sub">
 			{{ line.pairlyric }}
-		</div>
-	</div>
+		</span>
+	</button>
 </div>
 </template>
 
 <style lang="scss" scoped>
 .mp-lyrics {
 	overflow-y: auto;
-	height: 100%;
+	height: 216px;
 	overscroll-behavior: contain;
+	scroll-behavior: smooth;
 	scrollbar-width: thin;
 
 	&::-webkit-scrollbar {
@@ -119,25 +131,43 @@ defineExpose({ updateHighlight })
 	color: var(--c-text-3);
 }
 
+/* 每句都是按钮：点一下就从这句继续播 */
 .mp-lyric-line {
+	display: block;
 	opacity: 0.7;
-	padding: 0.35rem 0;
+	width: 100%;
+	padding: 0.35rem 0.4rem;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	font-family: inherit;
 	font-size: 0.82rem;
 	line-height: 1.5;
+	text-align: left;
 	color: var(--c-text-3);
-	transition: color 0.25s ease, opacity 0.25s ease;
+	transition: color 0.25s ease, opacity 0.25s ease, background-color 0.2s ease;
+	cursor: pointer;
+
+	&:hover {
+		opacity: 1;
+		background: color-mix(in srgb, var(--c-text) 6%, transparent);
+		color: var(--c-text-1);
+	}
 
 	&.is-active {
 		opacity: 1;
+		background: color-mix(in srgb, var(--mp-theme) 12%, transparent);
 		color: var(--c-text);
 	}
 }
 
 .mp-lyric-main {
+	display: block;
 	overflow-wrap: anywhere;
 }
 
 .mp-lyric-sub {
+	display: block;
 	margin-top: 0.1rem;
 	font-size: 0.75rem;
 	color: var(--c-text-3);

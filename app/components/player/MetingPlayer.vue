@@ -71,8 +71,8 @@ const dockSubTextRef = ref<HTMLElement | null>(null)
 /** 面板位置 */
 const panelPos = ref({ left: 0, top: 0, width: 0 })
 
-/** 面板里显示哪一块 */
-const pane = ref<'list' | 'lyrics'>('list')
+/** 歌词面板是否弹出（点播放模式旁边的歌词按钮） */
+const lyricsOpen = ref(false)
 
 /** 是否启用（可在设置面板里临时关掉） */
 const enabled = computed(() => runtime.enabled.value)
@@ -248,6 +248,28 @@ onBeforeUnmount(() => {
 })
 
 /**
+ * 展开 / 收起歌词面板
+ */
+function toggleLyrics(): void {
+	lyricsOpen.value = !lyricsOpen.value
+	if (lyricsOpen.value) {
+		// 打开后把当前唱到的那句滚到中间
+		nextTick(() => lyricsRef.value?.center())
+	}
+}
+
+/**
+ * 点击某句歌词：跳到那句继续播
+ *
+ * @param time 该句起始时间（秒）
+ */
+async function seekToLyric(time: number): Promise<void> {
+	seek(time)
+	if (!isPlaying.value)
+		await togglePlay()
+}
+
+/**
  * 进度条拖动
  *
  * @param event 事件
@@ -322,6 +344,7 @@ function onVolume(event: Event): void {
 		<div
 			v-if="open"
 			class="mp-panel"
+			:class="{ 'has-lyrics': lyricsOpen }"
 			:style="{ left: `${panelPos.left}px`, top: `${panelPos.top}px`, width: `${panelPos.width}px` }"
 		>
 			<!-- 播放器 -->
@@ -339,15 +362,27 @@ function onVolume(event: Event): void {
 							{{ currentSong?.artist ?? '—' }}
 						</div>
 					</div>
-					<button
-						type="button"
-						class="mp-icon-btn"
-						:title="modeLabel"
-						:aria-label="modeLabel"
-						@click="toggleMode"
-					>
-						<Icon :name="modeIcon" />
-					</button>
+					<div class="mp-player-actions">
+						<button
+							type="button"
+							class="mp-icon-btn"
+							:title="modeLabel"
+							:aria-label="modeLabel"
+							@click="toggleMode"
+						>
+							<Icon :name="modeIcon" />
+						</button>
+						<button
+							type="button"
+							class="mp-icon-btn"
+							:class="{ 'is-active': lyricsOpen }"
+							title="歌词"
+							aria-label="歌词"
+							@click="toggleLyrics"
+						>
+							<Icon name="ph:quotes-bold" />
+						</button>
+					</div>
 				</div>
 
 				<input
@@ -397,29 +432,32 @@ function onVolume(event: Event): void {
 				<p v-else-if="!ready" class="mp-loading">
 					歌单加载中…
 				</p>
+
+				<!-- 歌单：直接跟在播放区下面 -->
+				<div class="mp-playlist-section">
+					<MetingPlaylist
+						:songs="playlist"
+						:current-index="currentIndex"
+						@select="goToTrack($event)"
+					/>
+				</div>
 			</section>
 
-			<!-- 歌单 / 歌词 -->
-			<section class="mp-card mp-list-card">
+			<!-- 歌词：点播放模式旁边的歌词按钮才弹出 -->
+			<section v-if="lyricsOpen" class="mp-card mp-lyrics-card">
 				<header class="mp-card-head">
-					<button type="button" class="mp-tab" :class="{ 'is-active': pane === 'list' }" @click="pane = 'list'">
-						歌单
-					</button>
-					<button type="button" class="mp-tab" :class="{ 'is-active': pane === 'lyrics' }" @click="pane = 'lyrics'">
+					<span class="mp-lyrics-title">
 						歌词
+					</span>
+					<button type="button" class="mp-icon-btn is-mini" title="收起歌词" aria-label="收起歌词" @click="lyricsOpen = false">
+						<Icon name="ph:x-bold" />
 					</button>
 				</header>
-				<MetingPlaylist
-					v-show="pane === 'list'"
-					:songs="playlist"
-					:current-index="currentIndex"
-					@select="goToTrack($event)"
-				/>
 				<MetingLyrics
-					v-show="pane === 'lyrics'"
 					ref="lyricsRef"
 					:lines="lyrics"
 					:current-index="lyricIndex"
+					@seek="seekToLyric"
 				/>
 			</section>
 		</div>
@@ -723,9 +761,13 @@ function onVolume(event: Event): void {
 	--mp-border: color-mix(in srgb, var(--c-text) 12%, transparent);
 
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+	/* 默认只有播放区（含歌单），歌词弹出后才分出右侧一栏 */
+	grid-template-columns: minmax(0, 1fr);
 	gap: 0.6rem;
 	position: fixed;
+	overflow-y: auto;
+	max-height: calc(100vh - 6rem);
 	padding: 0.6rem;
 	border: 1px solid color-mix(in srgb, var(--c-text) 12%, transparent);
 	border-radius: 16px;
@@ -734,6 +776,10 @@ function onVolume(event: Event): void {
 	backdrop-filter: blur(18px) saturate(160%);
 	color: var(--c-text);
 	z-index: 1002;
+
+	&.has-lyrics {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+	}
 }
 
 .mp-card {
@@ -795,6 +841,13 @@ function onVolume(event: Event): void {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	color: var(--c-text-3);
+}
+
+.mp-player-actions {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 0.3rem;
 }
 
 .mp-icon-btn {
@@ -890,39 +943,29 @@ function onVolume(event: Event): void {
 	color: #E66;
 }
 
-/* 歌单 / 歌词卡片 */
-.mp-list-card {
+/* 歌单：跟在播放区下面 */
+.mp-playlist-section {
+	padding-top: 0.55rem;
+	border-top: 1px solid color-mix(in srgb, var(--c-text) 8%, transparent);
+}
+
+/* 歌词卡（右侧弹出） */
+.mp-lyrics-card {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
 	min-height: 0;
 }
 
-.mp-card-head {
-	display: flex;
-	gap: 0.3rem;
-	padding-bottom: 0.2rem;
-	border-bottom: 1px solid color-mix(in srgb, var(--c-text) 8%, transparent);
-}
-
-.mp-tab {
-	padding: 0.25rem 0.7rem;
-	border: none;
-	border-radius: 999px;
-	background: transparent;
-	font-size: 0.76rem;
-	color: var(--c-text-3);
-	transition: background-color 0.2s ease, color 0.2s ease;
-	cursor: pointer;
-
-	&.is-active {
-		background: color-mix(in srgb, var(--c-primary) 16%, transparent);
-		color: var(--c-primary);
-	}
+.mp-lyrics-title {
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--c-text-2);
 }
 
 @media screen and (max-width: 640px) {
-	.mp-panel {
+	.mp-panel,
+	.mp-panel.has-lyrics {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
