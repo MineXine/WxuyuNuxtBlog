@@ -219,3 +219,15 @@ Nuxt 官方链接
 ---
 
 ✅ **全部 36 个组件渲染完毕**
+---
+
+## ::equipment-item 装备卡片（独立组件）
+
+::equipment-item{name="天选4"}
+::
+
+::equipment-item{name="iPhone XR" category="外设" show-comment="false"}
+::
+
+::equipment-item{name="不存在的设备"}
+::

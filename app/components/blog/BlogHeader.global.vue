@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MetingPlayer from '~/components/player/MetingPlayer.vue'
+
 withDefaults(defineProps<{
 	tag?: string
 }>(), {
@@ -8,32 +10,65 @@ const appConfig = useAppConfig()
 </script>
 
 <template>
-<UtilLink class="blog-header">
-  <NuxtImg
-    :src="appConfig.header.logo"
-    class="blog-logo round-cobblestone"
-    :class="{ circle: appConfig.header.showTitle }"
-    :alt="appConfig.title"
-  />    
-	<div v-if="appConfig.header.showTitle" class="blog-text">
-		<component :is="tag" class="header-title">
-			<span
-				v-for="(char, charIndex) in appConfig.title"
-				:key="charIndex"
-				class="split-char"
-				:style="getFixedDelay((charIndex + 1) * .1)"
-				v-text="char"
-			/>
-		</component>
+<div class="blog-header-row">
+	<UtilLink class="blog-header">
+		<NuxtImg
+			:src="appConfig.header.logo"
+			class="blog-logo round-cobblestone"
+			:class="{ circle: appConfig.header.showTitle }"
+			:alt="appConfig.title"
+		/>
+		<div v-if="appConfig.header.showTitle" class="blog-text">
+			<component :is="tag" class="header-title">
+				<span
+					v-for="(char, charIndex) in appConfig.title"
+					:key="charIndex"
+					class="split-char"
+					:style="getFixedDelay((charIndex + 1) * .1)"
+					v-text="char"
+				/>
+			</component>
 
-		<div class="header-subtitle">
-			{{ appConfig.header.subtitle }}
+			<div class="header-subtitle">
+				{{ appConfig.header.subtitle }}
+			</div>
 		</div>
-	</div>
-</UtilLink>
+	</UtilLink>
+
+	<!-- 音乐播放器胶囊：停在 blog-text 旁边，移动端不显示 -->
+	<MetingPlayer v-if="appConfig.header.showTitle" />
+</div>
 </template>
 
 <style lang="scss" scoped>
+.blog-header-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+
+	/* 标题区优先保住宽度，别被胶囊挤成竖排 */
+	.blog-header {
+		flex: 3 1 auto;
+		min-width: 0;
+	}
+
+	.blog-text {
+		overflow: hidden;
+		min-width: 0;
+	}
+
+	.header-title {
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	.header-subtitle {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}
+
 .blog-header {
 	contain: layout;
 	display: flex;
@@ -47,15 +82,13 @@ const appConfig = useAppConfig()
 }
 
 .blog-logo {
-	height: 3em;  
-  border-radius: 50%;
+	height: 3em;
+	border-radius: 50%;
+
 	&.circle {
 		width: 3em;
 		box-shadow: var(--box-shadow-1), var(--box-shadow-3);
 	}
-  .round-cobblestone {
-
-  }
 }
 
 .header-title {

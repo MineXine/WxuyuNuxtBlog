@@ -5,46 +5,27 @@ import { equipment } from '~/equipment'
 import { useLayoutStore } from '~/stores/layout'
 
 const layoutStore = useLayoutStore()
-layoutStore.setAside(['blog-stats', 'blog-tech', 'blog-site-info', 'blog-archive', 'blog-log'])
+layoutStore.setAside(['blog-stats', 'blog-tech', 'blog-log'])
+
+/** 去掉 HTML 标签，用于评论引用 */
+const HTML_TAG_RE = /<[^>]+>/g
 
 useSeoMeta({
 	title: '我的装备',
 })
 
-/** 分类配置（图标 + 主题色），新增分类只需在这里补一项 */
-const CATEGORIES = [
-	{ name: '硬件', icon: 'ph:laptop-bold', color: '#3af' },
-	{ name: '外设', icon: 'ph:package-bold', color: '#3ba' },
-] as const
+// 新增状态管理
+const activeCategory = ref('硬件')
 
-/** 当前选中的分类 */
-const activeCategory = ref<string>(CATEGORIES[0].name)
-
-/** 按分类过滤设备 */
+// 计算属性过滤设备
 const filteredEquipment = computed(() =>
 	equipment.filter(item => item.categroy === activeCategory.value),
 )
 
-/** 切换分类 */
 function handleTabClick(category: string) {
 	activeCategory.value = category
 }
 
-/** 各分类的设备数量 */
-const getCategoryCount = computed(() => (category: string) =>
-	equipment.filter(item => item.categroy === category).length,
-)
-
-/** 去除描述里的 HTML 标签 */
-const HTML_TAG_RE = /<[^>]+>/g
-
-/**
- * 快速评论：把设备描述带入评论框
- *
- * 由 EquipmentCard 的 comment 事件触发。
- *
- * @param content 设备描述
- */
 function goComment(content: string) {
 	const textarea = document.querySelector('.atk-textarea') as HTMLTextAreaElement
 	if (textarea) {
@@ -53,6 +34,10 @@ function goComment(content: string) {
 		textarea.scrollIntoView({ behavior: 'smooth', block: 'center' })
 	}
 }
+
+const getCategoryCount = computed(() => (category: string) => {
+	return equipment.filter(item => item.categroy === category).length
+})
 </script>
 
 <template>
@@ -62,21 +47,20 @@ function goComment(content: string) {
 		<div class="categories-tabs">
 			<div class="tabs-container">
 				<div
-					v-for="category in CATEGORIES"
-					:key="category.name"
+					v-for="category in ['硬件', '外设']"
+					:key="category"
 					class="category-tab"
-					:class="{ active: activeCategory === category.name }"
-					:style="{ '--tab-color': category.color }"
-					@click="handleTabClick(category.name)"
+					:class="{ active: activeCategory === category }"
+					:style="{ '--tab-color': category === '硬件' ? '#3af' : category === '外设' ? '#3ba' : '' }"
+					@click="handleTabClick(category)"
 				>
-					<icon :name="category.icon" />
-					<span>{{ category.name }}</span>
-					<span>{{ getCategoryCount(category.name) }}</span>
+					<icon :name="category === '硬件' ? 'ph-laptop-bold' : (category === '外设' ? 'ph-package-bold' : '')" />
+					<span>{{ category }}</span>
+					<span>{{ getCategoryCount(category) }}</span>
 				</div>
 			</div>
 		</div>
-
-		<!-- 设备展示区：卡片由 EquipmentCard 组件渲染 -->
+		<!-- 设备展示区 -->
 		<div class="equipment-list">
 			<EquipmentCard
 				v-for="(item, index) in filteredEquipment"
@@ -91,12 +75,9 @@ function goComment(content: string) {
 </template>
 
 <style lang="scss" scoped>
-/**
- * 装备页布局
- *
- * 卡片本体样式在 components/equipment/EquipmentCard.vue 内（组件自带 scoped 样式），
- * 这里只负责：分类导航 + 列表栅格。
- */
+// 装备页面样式优化 (苏晓河编写，2025年2月5日)
+// 优化重点：提升加载性能，使用SCSS嵌套结构，语义化类名
+
 #icat-equipment {
 	--category-color-one: #3AF;
 	--category-color-two: #3BA;
@@ -134,23 +115,34 @@ function goComment(content: string) {
 					color: var(--c-text-2);
 					transition: all 0.3s ease;
 					cursor: pointer;
+				}
 
-					&.active {
-						border-color: var(--tab-color);
-						background: color-mix(in srgb, var(--tab-color) 10%, transparent);
-						font-weight: 600;
-						color: var(--tab-color);
-					}
+				.active {
+					background: color-mix(in srgb, var(--tab-color) 10%, transparent);
+					font-weight: 600;
+				}
 
-					&:hover {
-						border-color: var(--tab-color);
-						color: var(--tab-color);
-					}
+				.active, :hover {
+					border-color: var(--tab-color);
+					color: var(--tab-color);
 				}
 			}
 		}
 
-		/* 设备展示栅格 */
+		.category-title {
+			margin: 20px 7px 0;
+			font-size: 1.5rem;
+			font-weight: 600;
+			color: var(--icat-fontcolor);
+		}
+
+		.category-desc {
+			margin: 0.5rem 7px 1rem;
+			font-size: 0.9rem;
+			line-height: 1.4;
+			color: var(--icat-secondtext);
+		}
+
 		.equipment-list {
 			display: grid;
 			grid-template-columns: repeat(2, 1fr);
@@ -160,7 +152,7 @@ function goComment(content: string) {
 	}
 }
 
-/* 响应式设计 */
+// 响应式设计
 @media screen and (max-width: 1024px) {
 	#icat-equipment .equipment-category .equipment-list {
 		grid-template-columns: repeat(2, 1fr);
@@ -182,6 +174,11 @@ function goComment(content: string) {
 @media screen and (max-width: 480px) {
 	#icat-equipment .equipment-category {
 		margin: 0.25rem;
+
+		.category-title {
+			margin: 10px 7px 0;
+			font-size: 1.25rem;
+		}
 	}
 }
 </style>

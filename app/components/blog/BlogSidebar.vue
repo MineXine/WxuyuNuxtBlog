@@ -121,10 +121,6 @@ watch(() => route.path, openActiveMenus, { immediate: true })
 						</UtilLink>
 					</template>
 				</li>
-				<button class="sidebar-nav-item sidebar-nav-item-parent" @click="openShare()" alt="Button-Console">
-					<Icon name="ph:swatches-bold"></Icon>
-					<span class="nav-text">音乐控制</span>
-				</button>
 			</menu>
 		</template>
 	</nav>
