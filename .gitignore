@@ -6,6 +6,9 @@
 .cache
 dist
 
+# 临时改名备份目录（构建时为了绕开批量删除保护会先改名）
+*.bak-*
+
 # Node dependencies
 node_modules
 

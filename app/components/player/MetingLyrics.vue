@@ -79,7 +79,10 @@ defineExpose({ updateHighlight, center })
 		:data-line="index"
 		type="button"
 		class="mp-lyric-line"
-		:class="{ 'is-active': index === currentIndex }"
+		:class="{
+			'is-active': index === currentIndex,
+			'is-past': index < currentIndex,
+		}"
 		title="从这句开始播放"
 		@click="emit('seek', line.time)"
 	>
@@ -108,8 +111,12 @@ defineExpose({ updateHighlight, center })
 
 <style lang="scss" scoped>
 .mp-lyrics {
+	/* 填满卡片高度，超出部分滚动 */
+	flex: 1 1 auto;
 	overflow-y: auto;
-	height: 216px;
+	height: auto;
+	min-height: 0;
+	max-height: 100%;
 	overscroll-behavior: contain;
 	scroll-behavior: smooth;
 	scrollbar-width: thin;
@@ -134,7 +141,6 @@ defineExpose({ updateHighlight, center })
 /* 每句都是按钮：点一下就从这句继续播 */
 .mp-lyric-line {
 	display: block;
-	opacity: 0.7;
 	width: 100%;
 	padding: 0.35rem 0.4rem;
 	border: none;
@@ -144,20 +150,25 @@ defineExpose({ updateHighlight, center })
 	font-size: 0.82rem;
 	line-height: 1.5;
 	text-align: left;
-	color: var(--c-text-3);
-	transition: color 0.25s ease, opacity 0.25s ease, background-color 0.2s ease;
+
+	/* 未播放的歌词是黑色 */
+	color: #000;
+	transition: color 0.35s ease, background-color 0.2s ease;
 	cursor: pointer;
 
 	&:hover {
-		opacity: 1;
 		background: color-mix(in srgb, var(--c-text) 6%, transparent);
-		color: var(--c-text-1);
 	}
 
+	/* 已经唱过的行：点亮 */
+	&.is-past {
+		color: color-mix(in srgb, var(--mp-theme) 44%, transparent);
+	}
+
+	/* 当前正在唱的行 */
 	&.is-active {
-		opacity: 1;
 		background: color-mix(in srgb, var(--mp-theme) 12%, transparent);
-		color: var(--c-text);
+		color: color-mix(in srgb, var(--mp-theme) 44%, transparent);
 	}
 }
 
@@ -168,18 +179,19 @@ defineExpose({ updateHighlight, center })
 
 .mp-lyric-sub {
 	display: block;
+	opacity: 0.75;
 	margin-top: 0.1rem;
 	font-size: 0.75rem;
-	color: var(--c-text-3);
+	color: inherit;
 }
 
-/* 逐词高亮：唱过的部分用主题色，未唱的部分保持淡色 */
+/* 逐词高亮：唱过的部分主题色，未唱的部分黑色 */
 .mp-karaoke {
 	background:
 		linear-gradient(
 			to right,
-			var(--mp-theme) var(--progress, 0%),
-			color-mix(in srgb, var(--c-text-2) 60%, transparent) var(--progress, 0%)
+			color-mix(in srgb, var(--mp-theme) 44%, transparent) var(--progress, 0%),
+			#000 var(--progress, 0%)
 		);
 	background-clip: text;
 	color: transparent;

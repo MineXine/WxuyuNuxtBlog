@@ -51,6 +51,8 @@ const {
 const open = ref(false)
 /** 胶囊元素 */
 const dockRef = ref<HTMLElement | null>(null)
+/** 左侧悬浮卡（量高度用） */
+const playerCardRef = ref<HTMLElement | null>(null)
 /** 胶囊底部进度条 */
 const barRef = ref<HTMLElement | null>(null)
 /** 面板里的大进度条 */
@@ -68,11 +70,29 @@ const dockMainBoxRef = ref<HTMLElement | null>(null)
 const dockMainTextRef = ref<HTMLElement | null>(null)
 const dockSubBoxRef = ref<HTMLElement | null>(null)
 const dockSubTextRef = ref<HTMLElement | null>(null)
-/** 面板位置 */
-const panelPos = ref({ left: 0, top: 0, width: 0 })
+/** 左侧（播放区 + 歌单）宽度上限 */
+const PLAYER_MAX_W = 400
+/** 右侧（歌词）宽度上限 */
+const LYRICS_MAX_W = 300
+/** 两块之间的间距 */
+const FLOAT_GAP = 10
+/** 窄屏阈值：窄屏时歌词块堆到下方 */
+const STACK_BREAKPOINT = 760
 
-/** 歌词面板是否展开（胶囊上的歌词按钮可收起 / 展开） */
-const lyricsOpen = ref(true)
+/** 两块悬浮卡的位置与尺寸 */
+const panelPos = ref({
+	left: 0,
+	top: 0,
+	playerWidth: PLAYER_MAX_W,
+	lyricsWidth: 0,
+	lyricsHeight: 0,
+	lyricsLeft: 0,
+	lyricsTop: 0,
+	stacked: false,
+})
+
+/** 歌词块是否展开（点歌词按钮才出现） */
+const lyricsOpen = ref(false)
 
 /** 是否启用（可在设置面板里临时关掉） */
 const enabled = computed(() => runtime.enabled.value)
@@ -109,11 +129,34 @@ function updatePanelPos(): void {
 	if (!dock)
 		return
 	const rect = dock.getBoundingClientRect()
-	const width = Math.min(720, Math.max(320, window.innerWidth - 32))
+	const top = rect.bottom + FLOAT_GAP
+	const stacked = window.innerWidth < STACK_BREAKPOINT
+	// 视口右侧还剩多少空间
+	const right = Math.max(8, window.innerWidth - 8)
+	const left = Math.min(Math.max(8, rect.left), Math.max(8, right - 200))
+	const available = right - left
+
+	// 左侧块：歌词没展开时占满，展开了就给它留出右侧歌词的位置
+	const wantLyrics = lyricsOpen.value && !stacked
+	const lyricsWidth = wantLyrics
+		? Math.min(LYRICS_MAX_W, Math.max(200, available - PLAYER_MAX_W - FLOAT_GAP))
+		: 0
+	const playerWidth = wantLyrics
+		? Math.max(260, Math.min(PLAYER_MAX_W, available - lyricsWidth - FLOAT_GAP))
+		: Math.min(PLAYER_MAX_W, Math.max(260, available))
+
+	// 窄屏时歌词块堆到左侧块下方，需要量一下左侧块有多高
+	const playerHeight = playerCardRef.value?.offsetHeight ?? 0
+
 	panelPos.value = {
-		left: Math.min(Math.max(8, rect.left), window.innerWidth - width - 8),
-		top: rect.bottom + 8,
-		width,
+		left,
+		top,
+		playerWidth,
+		lyricsWidth: stacked ? playerWidth : lyricsWidth,
+		lyricsHeight: stacked ? 0 : playerHeight,
+		lyricsLeft: stacked ? left : left + playerWidth + FLOAT_GAP,
+		lyricsTop: stacked ? top + playerHeight + FLOAT_GAP : top,
+		stacked,
 	}
 }
 
@@ -131,7 +174,7 @@ function onDocClick(event: MouseEvent): void {
 	if (!open.value)
 		return
 	const target = event.target as HTMLElement
-	if (target.closest('.mp-dock') || target.closest('.mp-panel'))
+	if (target.closest('.mp-dock') || target.closest('.mp-float'))
 		return
 	open.value = false
 }
@@ -252,10 +295,14 @@ onBeforeUnmount(() => {
  */
 function toggleLyrics(): void {
 	lyricsOpen.value = !lyricsOpen.value
-	if (lyricsOpen.value) {
+	// 两块悬浮卡的位置要跟着变
+	updatePanelPos()
+	nextTick(() => {
+		updatePanelPos()
 		// 打开后把当前唱到的那句滚到中间
-		nextTick(() => lyricsRef.value?.center())
-	}
+		if (lyricsOpen.value)
+			lyricsRef.value?.center()
+	})
 }
 
 /**
@@ -339,129 +386,141 @@ function onVolume(event: Event): void {
 		</span>
 	</div>
 
-	<!-- 展开面板 -->
+	<!-- 展开：两块独立悬浮 -->
 	<Teleport to="body">
-		<div
+		<!-- 左侧悬浮块：播放区 + 歌单 -->
+		<section
 			v-if="open"
-			class="mp-panel"
-			:class="{ 'has-lyrics': lyricsOpen }"
-			:style="{ left: `${panelPos.left}px`, top: `${panelPos.top}px`, width: `${panelPos.width}px` }"
+			ref="playerCardRef"
+			class="mp-card mp-player mp-float"
+			:style="{
+				left: `${panelPos.left}px`,
+				top: `${panelPos.top}px`,
+				width: `${panelPos.playerWidth}px`,
+			}"
 		>
 			<!-- 播放器 -->
-			<section class="mp-card mp-player">
-				<div class="mp-player-head">
-					<div class="mp-player-cover">
-						<img v-if="currentSong?.pic" :src="currentSong.pic" :alt="currentSong.name">
-						<Icon v-else name="ph:music-notes-bold" />
+			<div class="mp-player-head">
+				<div class="mp-player-cover">
+					<img v-if="currentSong?.pic" :src="currentSong.pic" :alt="currentSong.name">
+					<Icon v-else name="ph:music-notes-bold" />
+				</div>
+				<div class="mp-player-meta">
+					<div class="mp-player-name">
+						{{ currentSong?.name ?? '歌单加载中…' }}
 					</div>
-					<div class="mp-player-meta">
-						<div class="mp-player-name">
-							{{ currentSong?.name ?? '歌单加载中…' }}
-						</div>
-						<div class="mp-player-artist">
-							{{ currentSong?.artist ?? '—' }}
-						</div>
-					</div>
-					<div class="mp-player-actions">
-						<button
-							type="button"
-							class="mp-icon-btn"
-							:class="{ 'is-active': lyricsOpen }"
-							:title="lyricsOpen ? '收起歌词' : '显示歌词'"
-							:aria-label="lyricsOpen ? '收起歌词' : '显示歌词'"
-							@click="toggleLyrics"
-						>
-							<Icon name="ph:quotes-bold" />
-						</button>
+					<div class="mp-player-artist">
+						{{ currentSong?.artist ?? '—' }}
 					</div>
 				</div>
-
-				<input
-					ref="progressRef"
-					type="range"
-					class="mp-range mp-progress"
-					min="0"
-					max="100"
-					step="0.1"
-					aria-label="播放进度"
-					@input="onSeek"
-				>
-
-				<div class="mp-time">
-					<span ref="curTimeRef">00:00</span>
-					<span ref="durTimeRef">{{ formatTime(duration) }}</span>
-				</div>
-
-				<div class="mp-controls">
+				<div class="mp-player-actions">
 					<button
 						type="button"
 						class="mp-icon-btn"
-						:title="modeLabel"
-						:aria-label="modeLabel"
-						@click="toggleMode"
+						:class="{ 'is-active': lyricsOpen }"
+						:title="lyricsOpen ? '收起歌词' : '显示歌词'"
+						:aria-label="lyricsOpen ? '收起歌词' : '显示歌词'"
+						@click="toggleLyrics"
 					>
-						<Icon :name="modeIcon" />
-					</button>
-					<button type="button" class="mp-icon-btn" title="上一曲" aria-label="上一曲" @click="prevTrack">
-						<Icon name="ph:skip-back-fill" />
-					</button>
-					<button type="button" class="mp-icon-btn is-main" :aria-label="isPlaying ? '暂停' : '播放'" @click="togglePlay">
-						<Icon :name="isPlaying ? 'ph:pause-fill' : 'ph:play-fill'" />
-					</button>
-					<button type="button" class="mp-icon-btn" title="下一曲" aria-label="下一曲" @click="nextTrack()">
-						<Icon name="ph:skip-forward-fill" />
-					</button>
-					<div class="mp-volume">
-						<Icon name="ph:speaker-high-bold" />
-						<input
-							type="range"
-							class="mp-range"
-							min="0"
-							max="100"
-							step="1"
-							:value="Math.round(volume * 100)"
-							aria-label="音量"
-							@input="onVolume"
-						>
-					</div>
-				</div>
-
-				<p v-if="error" class="mp-error">
-					{{ error }}
-				</p>
-				<p v-else-if="!ready" class="mp-loading">
-					歌单加载中…
-				</p>
-
-				<!-- 歌单：直接跟在播放区下面 -->
-				<div class="mp-playlist-section">
-					<MetingPlaylist
-						:songs="playlist"
-						:current-index="currentIndex"
-						@select="goToTrack($event)"
-					/>
-				</div>
-			</section>
-
-			<!-- 歌词：点播放模式旁边的歌词按钮才弹出 -->
-			<section v-if="lyricsOpen" class="mp-card mp-lyrics-card">
-				<header class="mp-card-head">
-					<span class="mp-lyrics-title">
 						<Icon name="ph:quotes-bold" />
-						歌词
-					</span>
-					<span class="mp-lyrics-counter">
-						{{ lyricIndex + 1 }} / {{ lyrics.length }}
-					</span>
-				</header>
-				<MetingLyrics
-					ref="lyricsRef"
-					:lines="lyrics"
-					:current-index="lyricIndex"
-					@seek="seekToLyric"
+					</button>
+				</div>
+			</div>
+
+			<input
+				ref="progressRef"
+				type="range"
+				class="mp-range mp-progress"
+				min="0"
+				max="100"
+				step="0.1"
+				aria-label="播放进度"
+				@input="onSeek"
+			>
+
+			<div class="mp-time">
+				<span ref="curTimeRef">00:00</span>
+				<span ref="durTimeRef">{{ formatTime(duration) }}</span>
+			</div>
+
+			<div class="mp-controls">
+				<button
+					type="button"
+					class="mp-icon-btn"
+					:title="modeLabel"
+					:aria-label="modeLabel"
+					@click="toggleMode"
+				>
+					<Icon :name="modeIcon" />
+				</button>
+				<button type="button" class="mp-icon-btn" title="上一曲" aria-label="上一曲" @click="prevTrack">
+					<Icon name="ph:skip-back-fill" />
+				</button>
+				<button type="button" class="mp-icon-btn is-main" :aria-label="isPlaying ? '暂停' : '播放'" @click="togglePlay">
+					<Icon :name="isPlaying ? 'ph:pause-fill' : 'ph:play-fill'" />
+				</button>
+				<button type="button" class="mp-icon-btn" title="下一曲" aria-label="下一曲" @click="nextTrack()">
+					<Icon name="ph:skip-forward-fill" />
+				</button>
+				<div class="mp-volume">
+					<Icon name="ph:speaker-high-bold" />
+					<input
+						type="range"
+						class="mp-range"
+						min="0"
+						max="100"
+						step="1"
+						:value="Math.round(volume * 100)"
+						aria-label="音量"
+						@input="onVolume"
+					>
+				</div>
+			</div>
+
+			<p v-if="error" class="mp-error">
+				{{ error }}
+			</p>
+			<p v-else-if="!ready" class="mp-loading">
+				歌单加载中…
+			</p>
+
+			<!-- 歌单：直接跟在播放区下面 -->
+			<div class="mp-playlist-section">
+				<MetingPlaylist
+					:songs="playlist"
+					:current-index="currentIndex"
+					@select="goToTrack($event)"
 				/>
-			</section>
-		</div>
+			</div>
+		</section>
+
+		<!-- 右侧悬浮块：点歌词按钮才出现 -->
+		<section
+			v-if="open && lyricsOpen"
+			class="mp-card mp-lyrics-card mp-float"
+			:style="{
+				left: `${panelPos.lyricsLeft}px`,
+				top: `${panelPos.lyricsTop}px`,
+				width: `${panelPos.lyricsWidth}px`,
+				height: panelPos.lyricsHeight ? `${panelPos.lyricsHeight}px` : undefined,
+			}"
+		>
+			<header class="mp-card-head">
+				<span class="mp-lyrics-title">
+					<Icon name="ph:quotes-bold" />
+					歌词
+				</span>
+				<span class="mp-lyrics-counter">
+					{{ lyricIndex + 1 }} / {{ lyrics.length }}
+				</span>
+			</header>
+			<MetingLyrics
+				ref="lyricsRef"
+				:lines="lyrics"
+				:current-index="lyricIndex"
+				@seek="seekToLyric"
+			/>
+		</section>
 	</Teleport>
 </div>
 </template>
@@ -512,8 +571,7 @@ function onVolume(event: Event): void {
 	box-sizing: border-box;
 
 	/* 凹槽质感：底色比顶栏压深一点 + 顶部内阴影 */
-	background-color: color-mix(in srgb, var(--c-bg) 4%, transparent);
-	backdrop-filter: blur(14px) saturate(160%);
+	background-color: var(--c-bg-1);
 	color: var(--c-text);
 	transition:
 		width 0.3s ease,
@@ -756,33 +814,21 @@ function onVolume(event: Event): void {
 
 <style lang="scss" scoped>
 /* 面板样式（Teleport 到 body，所以用全局兜底类名限定） */
-.mp-panel {
-	/* 面板 Teleport 到 body，脱离了胶囊的变量作用域，这里要重新定义 */
+
+/* 两块独立悬浮卡片（Teleport 到 body，变量作用域要自己带上） */
+.mp-float {
 	--mp-theme: var(--c-primary);
 	--mp-border: color-mix(in srgb, var(--c-text) 12%, transparent);
 
-	display: grid;
-
-	/* 默认只有播放区（含歌单），歌词弹出后才分出右侧一栏 */
-	grid-template-columns: minmax(0, 1fr);
-	gap: 0.6rem;
 	position: fixed;
 	overflow-y: auto;
-	max-height: calc(100vh - 6rem);
-	padding: 0.6rem;
-	border: 1px solid color-mix(in srgb, var(--c-text) 14%, transparent);
-	border-radius: 16px;
+	min-width: 0;
+	max-height: calc(100vh - 5rem);
+	border: 1px solid var(--mp-border);
+	border-radius: 14px;
 	box-shadow: 0 18px 40px -12px rgb(0 0 0 / 32%);
-
-	/* 毛玻璃：面板透出背后内容 */
-	background-color: color-mix(in srgb, var(--c-bg) 46%, transparent);
-	backdrop-filter: blur(28px) saturate(180%);
-	color: var(--c-text);
+	background: var(--c-bg-1);
 	z-index: 1002;
-
-	&.has-lyrics {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
-	}
 }
 
 .mp-card {
@@ -791,10 +837,7 @@ function onVolume(event: Event): void {
 	border: 1px solid color-mix(in srgb, var(--c-text) 12%, transparent);
 	border-radius: 12px;
 	box-shadow: 0 6px 20px -10px rgb(0 0 0 / 22%);
-
-	/* 半透明毛玻璃卡片，透出面板背后的内容 */
-	background: color-mix(in srgb, var(--c-bg-1) 52%, transparent);
-	backdrop-filter: blur(20px) saturate(170%);
+	background: var(--c-bg-1);
 }
 
 /* 播放器卡片 */
@@ -980,9 +1023,8 @@ function onVolume(event: Event): void {
 }
 
 @media screen and (max-width: 640px) {
-	.mp-panel,
-	.mp-panel.has-lyrics {
-		grid-template-columns: minmax(0, 1fr);
+	.mp-float {
+		max-height: calc(100vh - 4rem);
 	}
 }
 </style>
