@@ -103,7 +103,20 @@ defineExpose({ updateHighlight, center })
 			<template v-else>{{ line.text }}</template>
 		</span>
 		<span v-if="line.pairlyric" class="mp-lyric-sub">
-			{{ line.pairlyric }}
+			<template v-if="line.subEtext?.length">
+				<span class="mp-karaoke">
+					<span
+						v-for="(seg, segIndex) in line.subEtext"
+						:key="segIndex"
+						class="mp-seg"
+						data-seg
+						:data-start="seg.start"
+						:data-end="seg.end"
+						:data-dur="seg.duration"
+					>{{ seg.text }}</span>
+				</span>
+			</template>
+			<template v-else>{{ line.pairlyric }}</template>
 		</span>
 	</button>
 </div>
@@ -111,6 +124,9 @@ defineExpose({ updateHighlight, center })
 
 <style lang="scss" scoped>
 .mp-lyrics {
+	/* 已唱部分的主题色（比原先 44% 更深一档） */
+	--mp-lit: color-mix(in srgb, var(--mp-theme) 74%, transparent);
+
 	/* 填满卡片高度，超出部分滚动 */
 	flex: 1 1 auto;
 	overflow-y: auto;
@@ -164,14 +180,14 @@ defineExpose({ updateHighlight, center })
 	/* 已经唱过的行：点亮 */
 	&.is-past {
 		opacity: 1;
-		color: color-mix(in srgb, var(--mp-theme) 44%, transparent);
+		color: var(--mp-lit);
 	}
 
 	/* 当前正在唱的行 */
 	&.is-active {
 		opacity: 1;
 		background: color-mix(in srgb, var(--mp-theme) 12%, transparent);
-		color: color-mix(in srgb, var(--mp-theme) 44%, transparent);
+		color: var(--mp-lit);
 	}
 
 	/* 当前行主句放大加粗并带主题色辉光（重心落在当前句上） */
@@ -211,7 +227,7 @@ defineExpose({ updateHighlight, center })
 	background:
 		linear-gradient(
 			to right,
-			color-mix(in srgb, var(--mp-theme) 44%, transparent) var(--progress, 0%),
+			var(--mp-lit) var(--progress, 0%),
 			color-mix(in srgb, #000 30%, transparent) var(--progress, 0%)
 		);
 	background-clip: text;

@@ -800,7 +800,7 @@ function onVolume(event: Event): void {
 	background:
 		linear-gradient(
 			to right,
-			var(--mp-theme) var(--progress, 0%),
+			color-mix(in srgb, var(--mp-theme) 74%, transparent) var(--progress, 0%),
 			color-mix(in srgb, var(--c-text-2) 65%, transparent) var(--progress, 0%)
 		);
 	background-clip: text;

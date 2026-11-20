@@ -33,6 +33,8 @@ export interface LrcLine {
 	etext?: LrcSeg[]
 	/** 翻译行（中日文对照时才有） */
 	pairlyric?: string
+	/** 翻译行的逐字片段（与主行同一时间段） */
+	subEtext?: LrcSeg[]
 }
 
 /** 网易云歌词接口返回的原始结构 */
@@ -159,11 +161,14 @@ function synthesizeSegs(text: string, start: number, end: number): LrcSeg[] {
 function fillSyntheticSegs(lines: LrcLine[]): LrcLine[] {
 	for (let index = 0; index < lines.length; index += 1) {
 		const line = lines[index]
-		if (line.etext?.length)
-			continue
 		const next = lines[index + 1]
 		const end = next ? next.time : line.time + 4
-		line.etext = synthesizeSegs(line.text, line.time, end)
+		// 主行：没有官方逐词就按行时长合成
+		if (!line.etext?.length)
+			line.etext = synthesizeSegs(line.text, line.time, end)
+		// 翻译行：跟主行同一时间段，同样逐字点亮
+		if (line.pairlyric && !line.subEtext?.length)
+			line.subEtext = synthesizeSegs(line.pairlyric, line.time, end)
 	}
 	return lines
 }
@@ -262,7 +267,8 @@ export function parseNeteaseLyric(raw: NeteaseLyric): LrcLine[] {
 				result.push({ ...parsed, pairlyric: pickTranslation(raw, parsed.time) || undefined })
 			}
 		}
-		return result
+		// 主行已有官方逐词，这里只为翻译行补片段
+		return fillSyntheticSegs(result)
 	}
 
 	for (const lyric of raw.lrc!.lyric!.split('\n')) {
