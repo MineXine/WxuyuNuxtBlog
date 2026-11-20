@@ -170,6 +170,19 @@ defineExpose({ updateHighlight, center })
 		background: color-mix(in srgb, var(--mp-theme) 12%, transparent);
 		color: color-mix(in srgb, var(--mp-theme) 44%, transparent);
 	}
+
+	/* 当前行主句放大加粗并带主题色辉光（重心落在当前句上） */
+	&.is-active .mp-lyric-main {
+		font-size: 0.94rem;
+		font-weight: 700;
+		line-height: 1.45;
+		text-shadow: 0 0 14px color-mix(in srgb, var(--mp-theme) 26%, transparent);
+	}
+
+	/* 当前行的翻译也跟着加粗 */
+	&.is-active .mp-lyric-sub {
+		font-weight: 600;
+	}
 }
 
 .mp-lyric-main {
