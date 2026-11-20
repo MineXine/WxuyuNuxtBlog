@@ -795,8 +795,8 @@ function onVolume(event: Event): void {
 	}
 }
 
-/* 逐词高亮（胶囊内） */
-.mp-karaoke {
+/* 逐字高亮（胶囊内）：每个片段按自己的 --progress 填色 */
+.mp-seg {
 	background:
 		linear-gradient(
 			to right,
@@ -804,11 +804,8 @@ function onVolume(event: Event): void {
 			color-mix(in srgb, var(--c-text-2) 65%, transparent) var(--progress, 0%)
 		);
 	background-clip: text;
-	color: transparent;
-}
-
-.mp-seg {
 	white-space: pre-wrap;
+	color: transparent;
 }
 </style>
 

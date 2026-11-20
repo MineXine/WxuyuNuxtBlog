@@ -141,6 +141,7 @@ defineExpose({ updateHighlight, center })
 /* 每句都是按钮：点一下就从这句继续播 */
 .mp-lyric-line {
 	display: block;
+	opacity: 0.5;
 	width: 100%;
 	padding: 0.35rem 0.4rem;
 	border: none;
@@ -151,9 +152,9 @@ defineExpose({ updateHighlight, center })
 	line-height: 1.5;
 	text-align: left;
 
-	/* 未播放的歌词是黑色 */
+	/* 未播放的歌词是黑色，压暗一档，唱到才「点亮」 */
 	color: #000;
-	transition: color 0.35s ease, background-color 0.2s ease;
+	transition: color 0.35s ease, opacity 0.35s ease, background-color 0.2s ease;
 	cursor: pointer;
 
 	&:hover {
@@ -162,11 +163,13 @@ defineExpose({ updateHighlight, center })
 
 	/* 已经唱过的行：点亮 */
 	&.is-past {
+		opacity: 1;
 		color: color-mix(in srgb, var(--mp-theme) 44%, transparent);
 	}
 
 	/* 当前正在唱的行 */
 	&.is-active {
+		opacity: 1;
 		background: color-mix(in srgb, var(--mp-theme) 12%, transparent);
 		color: color-mix(in srgb, var(--mp-theme) 44%, transparent);
 	}
@@ -177,6 +180,11 @@ defineExpose({ updateHighlight, center })
 		font-weight: 700;
 		line-height: 1.45;
 		text-shadow: 0 0 14px color-mix(in srgb, var(--mp-theme) 26%, transparent);
+	}
+
+	/* 有逐词数据时不要辉光：透明字会把阴影显示成色晕，糊掉逐字进度 */
+	&.is-active .mp-lyric-main:has(.mp-karaoke) {
+		text-shadow: none;
 	}
 
 	/* 当前行的翻译也跟着加粗 */
@@ -198,19 +206,16 @@ defineExpose({ updateHighlight, center })
 	color: inherit;
 }
 
-/* 逐词高亮：唱过的部分主题色，未唱的部分黑色 */
-.mp-karaoke {
+/* 逐字高亮：每个片段按自己的 --progress 从左往右填色 */
+.mp-seg {
 	background:
 		linear-gradient(
 			to right,
 			color-mix(in srgb, var(--mp-theme) 44%, transparent) var(--progress, 0%),
-			#000 var(--progress, 0%)
+			color-mix(in srgb, #000 30%, transparent) var(--progress, 0%)
 		);
 	background-clip: text;
-	color: transparent;
-}
-
-.mp-seg {
 	white-space: pre-wrap;
+	color: transparent;
 }
 </style>
