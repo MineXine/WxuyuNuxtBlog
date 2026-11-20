@@ -65,6 +65,10 @@ const LRC_LINE_RE = /\[(\d+):(\d+(?:\.\d+)?)\](.*)/
 const WORD_CLEAN_RE = /\(\d+,\d+,\d+\)/g
 /** BOM */
 const BOM_RE = /^\uFEFF/
+/** 逐字切分 token：假名 / 汉字各自成段，拉丁词整体，空白单独（i 标志已覆盖大写） */
+const TOKEN_RE = /[\u3040-\u30FF\u4E00-\u9FFF]|[a-z0-9]+['’-]?[a-z0-9]*|\s+|\S/gi
+/** 空白 token 判定 */
+const BLANK_RE = /\s/
 
 /**
  * 从歌曲里取网易云 ID
@@ -114,13 +118,64 @@ export function splitTranslation(raw: string): { text: string, sub?: string } {
 }
 
 /**
+ * 把一行文字切成若干片段（中日文按字，拉丁文按词）
+ *
+ * 用于没有官方逐词数据时，按行时长给每个字分配时间片，
+ * 让全站所有歌都能「逐字点亮」，而不是只有部分歌有效果。
+ *
+ * @param text 行文字
+ * @param start 行起始（秒）
+ * @param end 行结束（秒，通常是下一行的起始）
+ * @returns 片段数组
+ */
+function synthesizeSegs(text: string, start: number, end: number): LrcSeg[] {
+	// 假名 / 汉字各自成段，拉丁字母与数字连成一个词，空白单独一段
+	const tokens = text.match(TOKEN_RE)
+	if (!tokens?.length)
+		return []
+	// 空白轻一点，长单词重一点，读起来才不自然后半句突然变快
+	const weights = tokens.map(token => (BLANK_RE.test(token) ? 0.3 : Math.max(1, Math.min(token.length, 6) * 0.7)))
+	const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
+	// 行间隔很长（间奏）时不把字拖慢，最多按 6 秒铺
+	const span = Math.max(0.4, Math.min(6, end - start))
+	let cursor = start
+	const segs: LrcSeg[] = []
+	tokens.forEach((token, index) => {
+		const duration = (weights[index] / totalWeight) * span
+		segs.push({ duration, start: cursor, end: cursor + duration, text: token })
+		cursor += duration
+	})
+	return segs
+}
+
+/**
+ * 给缺逐词数据的行补上合成片段
+ *
+ * 官方 YRC 只覆盖一部分歌；这里让普通 LRC 也有逐字效果。
+ *
+ * @param lines 歌词行
+ * @returns 补齐后的歌词行
+ */
+function fillSyntheticSegs(lines: LrcLine[]): LrcLine[] {
+	for (let index = 0; index < lines.length; index += 1) {
+		const line = lines[index]
+		if (line.etext?.length)
+			continue
+		const next = lines[index + 1]
+		const end = next ? next.time : line.time + 4
+		line.etext = synthesizeSegs(line.text, line.time, end)
+	}
+	return lines
+}
+
+/**
  * 解析普通 LRC
  *
  * @param lrc LRC 原文
  * @returns 歌词行数组
  */
 export function parseLRC(lrc: string): LrcLine[] {
-	return lrc
+	const lines = lrc
 		.split('\n')
 		.map((line): LrcLine | null => {
 			const matched = line.match(LRC_LINE_RE)
@@ -134,6 +189,8 @@ export function parseLRC(lrc: string): LrcLine[] {
 			return { time, text, pairlyric: sub }
 		})
 		.filter((line): line is LrcLine => !!line)
+	// 普通 LRC 没有逐词信息，按行时长合成，保证也能逐字点亮
+	return fillSyntheticSegs(lines)
 }
 
 /**
@@ -219,7 +276,8 @@ export function parseNeteaseLyric(raw: NeteaseLyric): LrcLine[] {
 			pairlyric: pickTranslation(raw, timesec) || undefined,
 		})
 	}
-	return result
+	// 没有逐词数据时同样合成，全部歌曲都能逐字点亮
+	return fillSyntheticSegs(result)
 }
 
 /**
